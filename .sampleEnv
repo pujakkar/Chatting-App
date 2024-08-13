@@ -1,4 +1,4 @@
-MONGO_URI=mongodb://localhost:27017
+MONGO_URI=mongodb+srv://chat:NUbf5DoJ4doNMRbz@cluster0.duqve.mongodb.net/
 CLOUDINARY_CLOUD_NAME=dkzmblmok
 CLOUDINARY_API_KEY=368486899685597
 CLOUDINARY_API_SECRET=jj1Hsh4Uzqb2jkqXWe_JJhIoxSw
