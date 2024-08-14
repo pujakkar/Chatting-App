@@ -28,19 +28,34 @@ const server=http.createServer(app)
 
 const io=new Server(server,{
     cors:{
-        origin:['http://localhost:5173',process.env.CLIENT_URL],
+        origin:['http://localhost:5173', 'https://chatting-app-frontend-sand.vercel.app' ],
         credentials:true
     }
 })
 
 app.set('io',io)
 
+const corsOptions = {
+  origin: 'https://chatting-app-frontend-sand.vercel.app',
+  credentials: true,
+};
+
+
 
 
 app.use(cors({
-    origin:['http://localhost:5173',process.env.CLIENT_URL],
+    origin:['http://localhost:5173','https://chatting-app-frontend-sand.vercel.app'],
     credentials:true
 }))
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://chatting-app-frontend-sand.vercel.app');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
+app.options('*', cors(corsOptions));
+
+
 app.use(express.urlencoded({extended:false}))
 app.use(cookieParser())
 app.use(express.json())
