@@ -8,12 +8,18 @@ const { NEW_REQUEST, REFETCH_CHATS, NEW_REQUEST_ACCEPTED } = require('../events/
 
 const handleLogin=async (req,res)=>{
     const {email,password,fullName}=req.body
+    console.log(req.body)
     if(!email || !password || !fullName){
         return res.json({message:'all fields are required'})
     }
     try {
+        console.log('hii')
         const token=await User.matchPassAndGenToken(email,password)
-        return res.cookie('token',token).json({message:'loggedin'})
+        res.cookie('token', token, {
+            httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+            secure: process.env.NODE_ENV === 'production', // Ensures cookies are sent over HTTPS in production
+            sameSite: 'None', // Allows cross-site cookies (necessary for CORS if frontend is on a different domain)
+          }).json({message:'loggedin'})
     } catch (error) {
         return res.json({message:'invalid email or password',error})
     }
