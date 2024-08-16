@@ -27,33 +27,62 @@ const handleLogin=async (req,res)=>{
 const handleSignUp=async (req,res)=>{
     const {fullName,userName,email,password}=req.body
 
-    //const avatar=req.file
+    const avatar=req.file 
+    //console.log(avatar)
+    if(avatar){
+        const result=await uploadToCloudinary([avatar])
 
-    const result=await uploadToCloudinary([avatar])
+        const userAvatar={
+            public_id:result[0].public_id,
+            url:result[0].url,
+        }
+        if(!fullName || !userName || !email || !password){
+            throw new Error('all fields are required')
+        }
+        const user=await User.findOne({email})
+        if (user){
+            return res.json({message:'user already exists'})
+        }
+        try {
+            await User.create({
+                fullName,
+                userName,
+                email,
+                password,
+                avatar:userAvatar,
+            })
+            return res.json({message:'user created'})
+        } catch (error) {
+            return res.json({message:'server error',error:error.message})
+        }
+    }
+    else{
 
-    // const userAvatar={
-    //     public_id:result[0].public_id,
-    //     url:result[0].url,
-    // }
-    if(!fullName || !userName || !email || !password){
-        throw new Error('all fields are required')
+        const userAvatar={
+            public_id:null,
+            url:'https://www.w3schools.com/howto/img_avatar.png'
+        }
+        if(!fullName || !userName || !email || !password){
+            throw new Error('all fields are required')
+        }
+        const user=await User.findOne({email})
+        if (user){
+            return res.json({message:'user already exists'})
+        }
+        try {
+            await User.create({
+                fullName,
+                userName,
+                email,
+                password,
+                avatar:userAvatar,
+            })
+            return res.json({message:'user created'})
+        } catch (error) {
+            return res.json({message:'server error',error:error.message})
+        }
     }
-    const user=await User.findOne({email})
-    if (user){
-        return res.json({message:'user already exists'})
-    }
-    try {
-        await User.create({
-            fullName,
-            userName,
-            email,
-            password,
-            //avatar:userAvatar,
-        })
-        return res.json({message:'user created'})
-    } catch (error) {
-        return res.json({message:'server error',error:error.message})
-    }
+
 }
 const getMyProfile=(req,res)=>{
     const user=req.user
