@@ -46,12 +46,18 @@ app.set('io',io)
 
 
 app.use(cors(corsOptions))
+
 // app.use((req, res, next) => {
 //   res.header('Access-Control-Allow-Origin', 'https://chatting-app-frontend-sand.vercel.app');
 //   res.header('Access-Control-Allow-Credentials', 'true');
 //   next();
 // });
 app.options('*', cors(corsOptions));
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
 
 
 app.use(express.urlencoded({extended:false}))
