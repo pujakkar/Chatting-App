@@ -7,6 +7,7 @@ function gentoken(user){
         fullName:user.fullName,
         email:user.email,
         avatar:user.avatar.url,
+        userName:user.userName
     }
     const token=jwt.sign(payload,secret)
     return token

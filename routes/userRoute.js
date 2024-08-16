@@ -1,5 +1,5 @@
 const express=require('express')
-const {handleLogin,handleSignUp,getMyProfile,logout,searchUser,sendRequest,acceptRequest,getMyNotifications,getMyFriends}=require('../controller/UserControllers')
+const {handleLogin,handleSignUp,getMyProfile,logout,searchUser,sendRequest,acceptRequest,getMyNotifications,getMyFriends,searchMyFriends}=require('../controller/UserControllers')
 const {multerUpload}=require('../middlewares/multer')
 const multer = require('multer');
 
@@ -16,5 +16,6 @@ Router.route('/searchUser').get(searchUser)
 Router.route('/sendReq').put(sendRequest)
 Router.route('/acceptReq').put(acceptRequest)
 Router.route('/getNotifications').get(getMyNotifications)
+Router.route('/searchMyFriends').get(searchMyFriends)
 
 module.exports={Router}

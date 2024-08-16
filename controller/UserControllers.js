@@ -7,15 +7,15 @@ const { NEW_REQUEST, REFETCH_CHATS, NEW_REQUEST_ACCEPTED } = require('../events/
 
 
 const handleLogin=async (req,res)=>{
-    const {email,password,fullName}=req.body
+    const {email,password}=req.body
     console.log(req.body)
-    if(!email || !password || !fullName){
+    if(!email || !password ){
         return res.json({message:'all fields are required'})
     }
     try {
         console.log('hii')
         const token=await User.matchPassAndGenToken(email,password)
-        res.cookie('token', token, {
+        return res.cookie('token',token, {
             httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
             secure: process.env.NODE_ENV === 'production', // Ensures cookies are sent over HTTPS in production
             sameSite: 'None', // Allows cross-site cookies (necessary for CORS if frontend is on a different domain)
@@ -84,16 +84,54 @@ const searchUser=async (req,res)=>{
         fullName:{$regex:name,$options: 'i'},
     })
 
-    const users=allUsersExceptMeMyFriends.map(({_id,fullName,avatar,groupChat})=>({
+    const users=allUsersExceptMeMyFriends.map(({_id,fullName,avatar,userName})=>({
         _id,
         fullName,
         avatar:avatar.url,
+        userName
     }))
     // console.log(users)
     
 
     return res.json({users})
 
+}
+
+const searchMyFriends=async(req,res)=>{
+    const {name=""}=req.query
+
+    const userId=req.user._id
+
+    const chats=await Chat.find({groupChat:false,members:req.user}).populate("members", "avatar fullName userName")
+
+    
+
+    const chatIds=chats.map((chat)=>chat._id).flat()
+
+
+    const allUsersMyFriends=await Chat.find({
+        _id:{$in: chatIds},
+        name:{$regex:name,$options: 'i'},
+    }).populate("members", "avatar fullName userName")
+
+    const userChats=allUsersMyFriends.map(({_id,name,groupChat,members,creator})=>{
+        
+        const otherMembers=members.filter((member)=>member._id.toString()!==userId.toString())
+
+        return {
+            _id,
+            name:groupChat?name :otherMembers[0].userName,
+            groupChat,
+            creator:creator?creator:null,
+            avatar:groupChat?otherMembers.slice(0,3).map(({avatar})=>avatar.url) :[otherMembers[0].avatar.url] ,
+            members:members,
+        }
+    })
+
+    console.log(userChats)
+
+
+    return res.json({userChats})
 }
 
 const getMyFriends=async(req,res)=>{
@@ -107,10 +145,11 @@ const getMyFriends=async(req,res)=>{
     // console.log(users)
     const usersExceptMe=users.filter(({_id})=>(!_id.equals(req.user._id)))
     // console.log(usersExceptMe)
-    const transformedChats=usersExceptMe.map(({_id,fullName,avatar})=>({
+    const transformedChats=usersExceptMe.map(({_id,fullName,avatar,userName})=>({
         _id,
         fullName,
         avatar:avatar.url,
+        userName
     }))
 //console.log(transformedChats)
     return res.json({transformedChats})
@@ -188,4 +227,4 @@ const getMyNotifications=async (req,res)=>{
 
     return res.json({message:'all reqs',allRequest})
 }
-module.exports={handleLogin,handleSignUp,getMyProfile,logout,searchUser,sendRequest,acceptRequest,getMyNotifications,getMyFriends}
+module.exports={handleLogin,handleSignUp,getMyProfile,logout,searchUser,sendRequest,acceptRequest,getMyNotifications,getMyFriends,searchMyFriends}

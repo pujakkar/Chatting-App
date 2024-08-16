@@ -33,14 +33,15 @@ const getMyChats=async (req,res)=>{
 
     const userId=req.user._id
     // console.log(req.user)
-    const allMyChats=await Chat.find({members:userId}).populate("members", "avatar fullName")
+    const allMyChats=await Chat.find({members:userId}).populate("members", "avatar fullName userName")
 
     const transformChats=allMyChats.map(({_id,name,groupChat,members,creator})=>{
+        
 
         const otherMembers=members.filter((member)=>member._id.toString()!==userId.toString())
         return {
             _id,
-            name:groupChat?name :otherMembers[0].fullName,
+            name:groupChat?name :otherMembers[0].userName,
             groupChat,
             creator:creator?creator:null,
             avatar:groupChat?otherMembers.slice(0,3).map(({avatar})=>avatar.url) :[otherMembers[0].avatar.url] ,

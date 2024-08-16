@@ -27,8 +27,8 @@ const app=express()
 const server=http.createServer(app)
 
 const corsOptions = {
-  origin: 'https://chatting-app-frontend-sand.vercel.app',
-  credentials: true,
+  origin: ['http://localhost:5173', 'https://chatting-app-frontend-sand.vercel.app'], // Allow both local and production frontend
+  credentials: true, // Allow cookies and credentials
 };
 
 app.use(cors(corsOptions));
@@ -45,10 +45,7 @@ app.set('io',io)
 
 
 
-app.use(cors({
-    origin:['http://localhost:5173','https://chatting-app-frontend-sand.vercel.app'],
-    credentials:true
-}))
+app.use(cors(corsOptions))
 // app.use((req, res, next) => {
 //   res.header('Access-Control-Allow-Origin', 'https://chatting-app-frontend-sand.vercel.app');
 //   res.header('Access-Control-Allow-Credentials', 'true');
