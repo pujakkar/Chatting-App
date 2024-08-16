@@ -27,14 +27,14 @@ const handleLogin=async (req,res)=>{
 const handleSignUp=async (req,res)=>{
     const {fullName,userName,email,password}=req.body
 
-    const avatar=req.file
+    //const avatar=req.file
 
     const result=await uploadToCloudinary([avatar])
 
-    const userAvatar={
-        public_id:result[0].public_id,
-        url:result[0].url,
-    }
+    // const userAvatar={
+    //     public_id:result[0].public_id,
+    //     url:result[0].url,
+    // }
     if(!fullName || !userName || !email || !password){
         throw new Error('all fields are required')
     }
@@ -48,7 +48,7 @@ const handleSignUp=async (req,res)=>{
             userName,
             email,
             password,
-            avatar:userAvatar,
+            //avatar:userAvatar,
         })
         return res.json({message:'user created'})
     } catch (error) {
