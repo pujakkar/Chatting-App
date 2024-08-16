@@ -8,82 +8,65 @@ const { NEW_REQUEST, REFETCH_CHATS, NEW_REQUEST_ACCEPTED } = require('../events/
 
 const handleLogin=async (req,res)=>{
     const {email,password}=req.body
-    console.log(req.body)
+    //console.log(req.body)
     if(!email || !password ){
-        return res.json({message:'all fields are required'})
+        return res.status(400).json({message:'all fields are required'})
     }
     try {
-        console.log('hii')
         const token=await User.matchPassAndGenToken(email,password)
         return res.cookie('token',token, {
             httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
             secure: process.env.NODE_ENV === 'production', // Ensures cookies are sent over HTTPS in production
             sameSite: 'None', // Allows cross-site cookies (necessary for CORS if frontend is on a different domain)
-          }).json({message:'loggedin'})
+          }).status(201).json({message:'loggedin'})
     } catch (error) {
-        return res.json({message:'invalid email or password',error})
+        return res.status(401).json({message:'invalid email or password',error})
     }
 }
-const handleSignUp=async (req,res)=>{
-    const {fullName,userName,email,password}=req.body
+const handleSignUp = async (req, res) => {
+    const { fullName, userName, email, password } = req.body;
+    const avatar = req.file;
 
-    const avatar=req.file 
-    //console.log(avatar)
-    if(avatar){
-        const result=await uploadToCloudinary([avatar])
-
-        const userAvatar={
-            public_id:result[0].public_id,
-            url:result[0].url,
-        }
-        if(!fullName || !userName || !email || !password){
-            throw new Error('all fields are required')
-        }
-        const user=await User.findOne({email})
-        if (user){
-            return res.json({message:'user already exists'})
-        }
-        try {
-            await User.create({
-                fullName,
-                userName,
-                email,
-                password,
-                avatar:userAvatar,
-            })
-            return res.json({message:'user created'})
-        } catch (error) {
-            return res.json({message:'server error',error:error.message})
-        }
-    }
-    else{
-
-        const userAvatar={
-            public_id:null,
-            url:'https://www.w3schools.com/howto/img_avatar.png'
-        }
-        if(!fullName || !userName || !email || !password){
-            throw new Error('all fields are required')
-        }
-        const user=await User.findOne({email})
-        if (user){
-            return res.json({message:'user already exists'})
-        }
-        try {
-            await User.create({
-                fullName,
-                userName,
-                email,
-                password,
-                avatar:userAvatar,
-            })
-            return res.json({message:'user created'})
-        } catch (error) {
-            return res.json({message:'server error',error:error.message})
-        }
+    if (!fullName || !userName || !email || !password) {
+        return res.status(400).json({ message: 'All fields are required' });
     }
 
-}
+    try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({ message: 'User already exists' });
+        }
+
+
+        let userAvatar = {
+            public_id: null,
+            url: 'https://www.w3schools.com/howto/img_avatar.png' 
+        };
+
+        if (avatar) {
+            const result = await uploadToCloudinary([avatar]);
+            userAvatar = {
+                public_id: result[0].public_id,
+                url: result[0].url,
+            };
+        }
+
+        const user = await User.create({
+            fullName,
+            userName,
+            email,
+            password,
+            avatar: userAvatar,
+        });
+
+        return res.status(201).json({ message: 'User created', user });
+
+    } catch (error) {
+        console.error('Sign up error:', error);
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
 const getMyProfile=(req,res)=>{
     const user=req.user
     if(!user) return res.json({message:'please login'})
@@ -257,3 +240,9 @@ const getMyNotifications=async (req,res)=>{
     return res.json({message:'all reqs',allRequest})
 }
 module.exports={handleLogin,handleSignUp,getMyProfile,logout,searchUser,sendRequest,acceptRequest,getMyNotifications,getMyFriends,searchMyFriends}
+
+// {
+//     httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+//     secure: process.env.NODE_ENV === 'production', // Ensures cookies are sent over HTTPS in production
+//     sameSite: 'None', // Allows cross-site cookies (necessary for CORS if frontend is on a different domain)
+//   }
